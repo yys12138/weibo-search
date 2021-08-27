@@ -14,9 +14,10 @@ from scrapy.exceptions import DropItem
 from scrapy.pipelines.files import FilesPipeline
 from scrapy.pipelines.images import ImagesPipeline
 from scrapy.utils.project import get_project_settings
-
-settings = get_project_settings()
-
+import  pymongo
+from weibo.items import WeiboItem
+#settings = get_project_settings()
+from scrapy.conf import settings
 
 class CsvPipeline(object):
     def process_item(self, item, spider):
@@ -118,6 +119,48 @@ class MongoPipeline(object):
         except AttributeError:
             pass
 
+class Data2MongoDBPipeline(object):
+
+    def __init__(self):
+        # 获取settings文件中的用户、密码、主机名、端口号和数据库名
+        user = settings['MONGODB_USER']
+        password = settings['MONGODB_PASSWORD']
+        host = settings['MONGODB_HOST']
+        port = settings['MONGODB_PORT']
+        print("初始化完毕")
+        # 指向指定的数据库
+        dbname = settings['MONGODB_DBNAME']
+
+        # pymongo.MongoClient(host, port) 创建MongoDB链接
+        # mongodb://用户名:密码@公网ip:端口/数据库名
+        self.client = None
+        if user is None:
+            self.client = pymongo.MongoClient(host=host, port=port)
+        else:
+            self.client = pymongo.MongoClient('mongodb://' + user + ':' + password + '@' + host + ':' + port + '/' + dbname)
+
+        mdb = self.client[dbname]
+
+        # 获取数据库里存放数据的表名
+        self.doc = mdb[settings['MONGODB_DOCNAME']]
+
+    def process_item(self, item, spider):
+        data = dict(item)
+        # 向指定的表里添加/更新数据
+        print(type(item))
+        if isinstance(item, WeiboItem):
+            # self.doc1.insert(data)
+            self.doc.update(
+                {'_id': data['id']},
+                {'$set': data},
+                upsert=True
+            )
+
+        return item
+
+    def close_spider(self, spider):
+        self.client.close()
+
 
 class MysqlPipeline(object):
     def create_database(self, mysql_config):
@@ -206,8 +249,10 @@ class DuplicatesPipeline(object):
         self.ids_seen = set()
 
     def process_item(self, item, spider):
-        if item['weibo']['id'] in self.ids_seen:
+        if item['id'] in self.ids_seen:
             raise DropItem("过滤重复微博: %s" % item)
         else:
-            self.ids_seen.add(item['weibo']['id'])
+            self.ids_seen.add(item['id'])
             return item
+
+

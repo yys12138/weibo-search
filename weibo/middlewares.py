@@ -6,7 +6,7 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-
+from scrapy.conf import settings
 
 class WeiboSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -101,3 +101,75 @@ class WeiboDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+
+import random
+
+
+class RandomUserAgentMiddleware(object):
+
+    def __init__(self):
+        self.agents = settings['USER_AGENTS']
+
+    def process_request(self, request, spider):
+        request.headers.setdefault('User-Agent', random.choice(self.agents))
+
+
+
+import base64
+
+class ABuProxyMiddleware(object):
+
+    def __init__(self):
+        print("使用阿布云代理IP。。。")
+        self.proxy_server = settings['ABU_PROXY_SERVER']
+        self.proxy_user = settings['ABU_PROXY_USER']
+        self.proxy_pass = settings['ABU_PROXY_PASS']
+        self.proxy_authorization = "Basic " + base64.urlsafe_b64encode(bytes((self.proxy_user + ":" + self.proxy_pass), "ascii")).decode("utf8")
+
+    def process_request(self, request, spider):
+        request.meta['proxy'] = self.proxy_server
+        request.headers['Proxy-Authorization'] = self.proxy_authorization
+
+from twisted.internet.error import TimeoutError, DNSLookupError, ConnectionRefusedError, ConnectionDone, ConnectError, ConnectionLost, TCPTimedOutError
+from twisted.web.client import ResponseFailed
+from twisted.internet import defer
+from scrapy.core.downloader.handlers.http11 import TunnelError
+from scrapy.http import HtmlResponse
+
+
+class ProcessAllExceptionMiddleware(object):
+    ALL_EXCEPTIONS = (defer.TimeoutError, TimeoutError, DNSLookupError, ConnectionRefusedError, ConnectionDone, ConnectError,
+                      ConnectionLost, TCPTimedOutError, ResponseFailed, IOError, TunnelError)
+
+    def process_response(self, request, response, spider):
+        # 捕获状态码为40x/50x的response
+        if str(response.status).startswith('4') or str(response.status).startswith('5'):
+            # 封装一个response，返回给spider，spider代码中根据url==''来处理response
+            response = HtmlResponse(url='')
+            return response
+        # 其他状态码不处理
+        return response
+
+    def process_exception(self, request, exception, spider):
+        # 捕获几乎所有的异常
+        if isinstance(exception, self.ALL_EXCEPTIONS):
+            print('捕获到异常=>%s' % (exception))
+            # 封装一个response，返回给spider，spider代码中根据url==''来处理response
+            response = HtmlResponse(url='')
+            return response
+        # 未捕获到的异常
+        print('出现异常，但未捕获=>%s' % exception)
+
+import time
+
+
+class RandomDelayMiddleware(object):
+
+    def __init__(self):
+        self.delay = settings['WD_RANDOM_DELAY']
+
+    def process_request(self, request, spider):
+        delay = random.randint(0, self.delay)
+        time.sleep(delay)

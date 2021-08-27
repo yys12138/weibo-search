@@ -13,10 +13,12 @@ from weibo.items import WeiboItem
 
 
 class SearchSpider(scrapy.Spider):
+    #初始化
     name = 'search'
     allowed_domains = ['weibo.com']
     settings = get_project_settings()
     keyword_list = settings.get('KEYWORD_LIST')
+    present_url=None
     if not isinstance(keyword_list, list):
         if not os.path.isabs(keyword_list):
             keyword_list = os.getcwd() + os.sep + keyword_list
@@ -42,6 +44,7 @@ class SearchSpider(scrapy.Spider):
     mysql_error = False
     pymysql_error = False
 
+    #最开始的地方，对keylist的遍历
     def start_requests(self):
         start_date = datetime.strptime(self.start_date, '%Y-%m-%d')
         end_date = datetime.strptime(self.end_date,
@@ -55,6 +58,7 @@ class SearchSpider(scrapy.Spider):
                 url = base_url + self.weibo_type
                 url += self.contain_type
                 url += '&timescope=custom:{}:{}'.format(start_str, end_str)
+                self.present_url=url
                 yield scrapy.Request(url=url,
                                      callback=self.parse,
                                      meta={
@@ -69,6 +73,7 @@ class SearchSpider(scrapy.Spider):
                     url = base_url + self.weibo_type
                     url += self.contain_type
                     url += '&timescope=custom:{}:{}'.format(start_str, end_str)
+                    self.present_url=url
                     # 获取一个省的搜索结果
                     yield scrapy.Request(url=url,
                                          callback=self.parse,
@@ -92,7 +97,7 @@ class SearchSpider(scrapy.Spider):
         if self.mysql_error:
             print('系统中可能没有安装或正确配置MySQL数据库，请先根据系统环境安装或配置MySQL，再运行程序')
             raise CloseSpider()
-
+    #按照时间上天数的大小采取不同策略
     def parse(self, response):
         base_url = response.meta.get('base_url')
         keyword = response.meta.get('keyword')
@@ -268,21 +273,24 @@ class SearchSpider(scrapy.Spider):
     def parse_page(self, response):
         """解析一页搜索结果的信息"""
         keyword = response.meta.get('keyword')
-        is_empty = response.xpath(
-            '//div[@class="card card-no-result s-pt20b40"]')
-        if is_empty:
-            print('当前页面搜索结果为空')
+        if response.url!="" and response.url is None:
+            is_empty = response.xpath(
+                '//div[@class="card card-no-result s-pt20b40"]')
+            if is_empty:
+                print('当前页面搜索结果为空')
+            else:
+                for weibo in self.parse_weibo(response):
+                    self.check_environment()
+                    yield weibo
+                next_url = response.xpath(
+                    '//a[@class="next"]/@href').extract_first()
+                if next_url:
+                    next_url = self.base_url + next_url
+                    yield scrapy.Request(url=next_url,
+                                         callback=self.parse_page,
+                                         meta={'keyword': keyword})
         else:
-            for weibo in self.parse_weibo(response):
-                self.check_environment()
-                yield weibo
-            next_url = response.xpath(
-                '//a[@class="next"]/@href').extract_first()
-            if next_url:
-                next_url = self.base_url + next_url
-                yield scrapy.Request(url=next_url,
-                                     callback=self.parse_page,
-                                     meta={'keyword': keyword})
+            print("完蛋,response为空")
 
     def get_article_url(self, selector):
         """获取微博头条文章url"""
@@ -449,6 +457,8 @@ class SearchSpider(scrapy.Spider):
                     video_url = unquote(
                         str(video_url)).split('video_src=//')[-1]
                     video_url = 'http://' + video_url
+
+                #是否为转发
                 if not retweet_sel:
                     weibo['pics'] = pics
                     weibo['video_url'] = video_url
@@ -514,7 +524,7 @@ class SearchSpider(scrapy.Spider):
                     retweet['pics'] = pics
                     retweet['video_url'] = video_url
                     retweet['retweet_id'] = ''
-                    yield {'weibo': retweet, 'keyword': keyword}
+                    yield   retweet
                     weibo['retweet_id'] = retweet['id']
-                print(weibo)
-                yield {'weibo': weibo, 'keyword': keyword}
+                #print(weibo)
+                yield weibo
