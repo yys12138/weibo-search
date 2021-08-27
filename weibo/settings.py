@@ -40,7 +40,7 @@ IMAGES_STORE = './'
 # 视频文件存储路径
 FILES_STORE = './'
 # 配置MongoDB数据库
-MONGO_URI = 'localhost'
+#MONGO_URI = 'localhost'
 # 配置MySQL数据库，以下为默认配置，可以根据实际情况更改，程序会自动生成一个名为weibo的数据库，如果想换其它名字请更改MYSQL_DATABASE值
 # MYSQL_HOST = 'localhost'
 # MYSQL_PORT = 3306
@@ -52,10 +52,10 @@ MONGO_URI = 'localhost'
 
 # 1、降低请求速率
 # 并发数量 默认16
-CONCURRENT_REQUESTS = 80
+CONCURRENT_REQUESTS = 40
 
 # Twisted IO线程池的最大大小，默认10
-REACTOR_THREADPOOL_MAXSIZE = 50
+REACTOR_THREADPOOL_MAXSIZE = 20
 
 # 下载超时时间
 DOWNLOAD_TIMEOUT = 30
@@ -116,7 +116,7 @@ ABU_PROXY_PASS = '18EAB3A55A66A339'
 # 阿布云动态ip默认是1秒钟请求5次，（可以加钱，购买多次）。所以，当他是默认5次的时候，我需要对爬虫进行限速
 AUTOTHROTTLE_ENABLED = True
 AUTOTHROTTLE_START_DELAY = 1  # 初始下载延迟
-DOWNLOAD_DELAY = 8  # 延迟下载间隔
+DOWNLOAD_DELAY = 10 # 延迟下载间隔
 
 WD_RANDOM_DELAY = 10  # 自定义延迟间隔
 

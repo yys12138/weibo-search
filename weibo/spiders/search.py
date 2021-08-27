@@ -273,7 +273,8 @@ class SearchSpider(scrapy.Spider):
     def parse_page(self, response):
         """解析一页搜索结果的信息"""
         keyword = response.meta.get('keyword')
-        if response.url!="" and response.url is None:
+        print(response)
+        if response.url!="" and response.url is not None:
             is_empty = response.xpath(
                 '//div[@class="card card-no-result s-pt20b40"]')
             if is_empty:
@@ -284,6 +285,7 @@ class SearchSpider(scrapy.Spider):
                     yield weibo
                 next_url = response.xpath(
                     '//a[@class="next"]/@href').extract_first()
+                print(next_url)
                 if next_url:
                     next_url = self.base_url + next_url
                     yield scrapy.Request(url=next_url,
@@ -524,7 +526,7 @@ class SearchSpider(scrapy.Spider):
                     retweet['pics'] = pics
                     retweet['video_url'] = video_url
                     retweet['retweet_id'] = ''
-                    yield   retweet
+                    yield {'weibo': retweet, 'keyword': keyword}
                     weibo['retweet_id'] = retweet['id']
                 #print(weibo)
                 yield weibo
