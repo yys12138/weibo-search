@@ -39,10 +39,10 @@ class SearchSpider(scrapy.Spider):
     if util.str_to_time(start_date) > util.str_to_time(end_date):
         sys.exit('settings.py配置错误，START_DATE值应早于或等于END_DATE值，请重新配置settings.py')
     further_threshold = settings.get('FURTHER_THRESHOLD', 46)
-    mongo_error = False
-    pymongo_error = False
-    mysql_error = False
-    pymysql_error = False
+    # mongo_error = False
+    # pymongo_error = False
+    # mysql_error = False
+    # pymysql_error = False
 
     #最开始的地方，对keylist的遍历
     def start_requests(self):
@@ -83,20 +83,20 @@ class SearchSpider(scrapy.Spider):
                                              'province': region
                                          })
 
-    def check_environment(self):
-        """判断配置要求的软件是否已安装"""
-        if self.pymongo_error:
-            print('系统中可能没有安装pymongo库，请先运行 pip install pymongo ，再运行程序')
-            raise CloseSpider()
-        if self.mongo_error:
-            print('系统中可能没有安装或启动MongoDB数据库，请先根据系统环境安装或启动MongoDB，再运行程序')
-            raise CloseSpider()
-        if self.pymysql_error:
-            print('系统中可能没有安装pymysql库，请先运行 pip install pymysql ，再运行程序')
-            raise CloseSpider()
-        if self.mysql_error:
-            print('系统中可能没有安装或正确配置MySQL数据库，请先根据系统环境安装或配置MySQL，再运行程序')
-            raise CloseSpider()
+    # def check_environment(self):
+    #     """判断配置要求的软件是否已安装"""
+    #     if self.pymongo_error:
+    #         print('系统中可能没有安装pymongo库，请先运行 pip install pymongo ，再运行程序')
+    #         raise CloseSpider()
+    #     if self.mongo_error:
+    #         print('系统中可能没有安装或启动MongoDB数据库，请先根据系统环境安装或启动MongoDB，再运行程序')
+    #         raise CloseSpider()
+    #     if self.pymysql_error:
+    #         print('系统中可能没有安装pymysql库，请先运行 pip install pymysql ，再运行程序')
+    #         raise CloseSpider()
+    #     if self.mysql_error:
+    #         print('系统中可能没有安装或正确配置MySQL数据库，请先根据系统环境安装或配置MySQL，再运行程序')
+    #         raise CloseSpider()
     #按照时间上天数的大小采取不同策略
     def parse(self, response):
         base_url = response.meta.get('base_url')
@@ -273,7 +273,6 @@ class SearchSpider(scrapy.Spider):
     def parse_page(self, response):
         """解析一页搜索结果的信息"""
         keyword = response.meta.get('keyword')
-        print(response)
         if response.url!="" and response.url is not None:
             is_empty = response.xpath(
                 '//div[@class="card card-no-result s-pt20b40"]')
@@ -285,7 +284,6 @@ class SearchSpider(scrapy.Spider):
                     yield weibo
                 next_url = response.xpath(
                     '//a[@class="next"]/@href').extract_first()
-                print(next_url)
                 if next_url:
                     next_url = self.base_url + next_url
                     yield scrapy.Request(url=next_url,
