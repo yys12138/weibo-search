@@ -29,9 +29,9 @@ CONTAIN_TYPE = 0
 # 具体支持的地名见region.py文件，注意只支持省或直辖市的名字，省下面的市名及直辖市下面的区县名不支持，不筛选请用”全部“
 REGION = ['全部']
 # 搜索的起始日期，为yyyy-mm-dd形式，搜索结果包含该日期
-START_DATE = '2021-08-01'
+START_DATE = '2021-01-01'
 # 搜索的终止日期，为yyyy-mm-dd形式，搜索结果包含该日期
-END_DATE = '2021-08-24'
+END_DATE = '2021-08-31'
 # 进一步细分搜索的阈值，若结果页数大于等于该值，则认为结果没有完全展示，细分搜索条件重新搜索以获取更多微博。数值越大速度越快，也越有可能漏掉微博；数值越小速度越慢，获取的微博就越多。
 # 建议数值大小设置在40到50之间。
 FURTHER_THRESHOLD = 46
@@ -74,10 +74,7 @@ DEFAULT_REQUEST_HEADERS = {
     'Accept':
     'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-US;q=0.7',
-    'cookie': '_T_WM=82689783695; SCF=AkmB5XwoF6fjk-xMGCAgCDtsG8K4D8OPgKtAkHT_EG5DkCnXGh0ejo4lKFBPFnKsqI6KxFl9T0-z6KqkR73GZw8.; '
-              'SUB=_2A25MIPvDDeRhGeNG6lsU-CbMyTmIHXVv6oWLrDV6PUJbktCOLWz6kW1NS2Ius0EhOCnhLkLccWb0r-ztXGz67wSv; '
-              'SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WW7PI-x.h46o4xd2mKXRMzd5NHD95Qf1h24SKnRehzfWs4DqcjZIrH0UGULMcyaU7tt; '
-              'SSOLoginState=1629784980; MLOGIN=1; M_WEIBOCN_PARAMS=luicode%3D20000174; WEIBOCN_FROM=1110106030',
+    'cookie': 'SINAGLOBAL=8094231469976.843.1605344132153; SCF=AkmB5XwoF6fjk-xMGCAgCDtsG8K4D8OPgKtAkHT_EG5D9-X2sqf4Bou6xeC-MM3KTWYLhCUcqE9vNLI4CVBNLu0.; _s_tentry=-; Apache=4141911250488.2817.1630304530393; ULV=1630304530434:19:8:1:4141911250488.2817.1630304530393:1630143678439; webim_unReadCount={"time":1630377389611,"dm_pub_total":13,"chat_group_client":0,"chat_group_notice":0,"allcountNum":68,"msgbox":0}; login_sid_t=a2a79333cc9c04166bae33456dc44ae4; cross_origin_proto=SSL; UOR=kim.plopco.com,s.weibo.com,login.sina.com.cn; WBStorage=2ceabba76d81138d|undefined; WBtopGlobal_register_version=2021083113; SUB=_2A25MKbTcDeRhGeNG6lsU-CbMyTmIHXVvXqEUrDV8PUNbmtAKLWOkkW9NS2IusyHjabhYJj2_atr2SrHwwIodLczK; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WW7PI-x.h46o4xd2mKXRMzd5JpX5KzhUgL.Fo-ReK.f1hn7eo-2dJLoI7D3UPSXUcH0IsvN; ALF=1661925388; SSOLoginState=1630389388',
    'Connection': 'keep-alive'
 }
 # 5、使用动态USER_AGENT
@@ -138,7 +135,7 @@ DOWNLOADER_MIDDLEWARES = {
     # 'doubanVideoSpiderSlave.middlewares.FreeProxyMiddleware': 2,
 
     # 随机延迟
-    "weibo.middlewares.RandomDelayMiddleware": 999
+    #"weibo.middlewares.RandomDelayMiddleware": 999
 }
 
 ## ========== 防封配置 end ==========
@@ -150,7 +147,7 @@ DOWNLOADER_MIDDLEWARES = {
 REDIS_HOST = "127.0.0.1"
 # 端口号，默认是6379
 REDIS_PORT = 6379
-REDIS_LIST_KEY = 'wd_baidutieba_康佳'
+REDIS_LIST_KEY = 'wd_weibo_TCL'
 
 # MONGODB
 MONGODB_HOST = '127.0.0.1'

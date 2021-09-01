@@ -11,6 +11,7 @@ from scrapy.exceptions import CloseSpider
 from scrapy.utils.project import get_project_settings
 from weibo.items import WeiboItem
 
+#meta可能只有8个参数
 
 class SearchSpider(scrapy.Spider):
     #初始化
@@ -39,10 +40,10 @@ class SearchSpider(scrapy.Spider):
     if util.str_to_time(start_date) > util.str_to_time(end_date):
         sys.exit('settings.py配置错误，START_DATE值应早于或等于END_DATE值，请重新配置settings.py')
     further_threshold = settings.get('FURTHER_THRESHOLD', 46)
-    # mongo_error = False
-    # pymongo_error = False
-    # mysql_error = False
-    # pymysql_error = False
+    mongo_error = False
+    pymongo_error = False
+    mysql_error = False
+    pymysql_error = False
 
     #最开始的地方，对keylist的遍历
     def start_requests(self):
@@ -83,20 +84,20 @@ class SearchSpider(scrapy.Spider):
                                              'province': region
                                          })
 
-    # def check_environment(self):
-    #     """判断配置要求的软件是否已安装"""
-    #     if self.pymongo_error:
-    #         print('系统中可能没有安装pymongo库，请先运行 pip install pymongo ，再运行程序')
-    #         raise CloseSpider()
-    #     if self.mongo_error:
-    #         print('系统中可能没有安装或启动MongoDB数据库，请先根据系统环境安装或启动MongoDB，再运行程序')
-    #         raise CloseSpider()
-    #     if self.pymysql_error:
-    #         print('系统中可能没有安装pymysql库，请先运行 pip install pymysql ，再运行程序')
-    #         raise CloseSpider()
-    #     if self.mysql_error:
-    #         print('系统中可能没有安装或正确配置MySQL数据库，请先根据系统环境安装或配置MySQL，再运行程序')
-    #         raise CloseSpider()
+    def check_environment(self):
+        """判断配置要求的软件是否已安装"""
+        if self.pymongo_error:
+            print('系统中可能没有安装pymongo库，请先运行 pip install pymongo ，再运行程序')
+            raise CloseSpider()
+        if self.mongo_error:
+            print('系统中可能没有安装或启动MongoDB数据库，请先根据系统环境安装或启动MongoDB，再运行程序')
+            raise CloseSpider()
+        if self.pymysql_error:
+            print('系统中可能没有安装pymysql库，请先运行 pip install pymysql ，再运行程序')
+            raise CloseSpider()
+        if self.mysql_error:
+            print('系统中可能没有安装或正确配置MySQL数据库，请先根据系统环境安装或配置MySQL，再运行程序')
+            raise CloseSpider()
     #按照时间上天数的大小采取不同策略
     def parse(self, response):
         base_url = response.meta.get('base_url')
@@ -360,7 +361,9 @@ class SearchSpider(scrapy.Spider):
             )
             if info:
                 weibo = WeiboItem()
+                #微博id
                 weibo['id'] = sel.xpath('@mid').extract_first()
+                #与用户设备关联的id
                 weibo['bid'] = sel.xpath(
                     '(.//p[@class="from"])[last()]/a[1]/@href').extract_first(
                     ).split('/')[-1].split('?')[0]
@@ -524,7 +527,7 @@ class SearchSpider(scrapy.Spider):
                     retweet['pics'] = pics
                     retweet['video_url'] = video_url
                     retweet['retweet_id'] = ''
-                    yield {'weibo': retweet, 'keyword': keyword}
+                    yield   retweet
                     weibo['retweet_id'] = retweet['id']
                 #print(weibo)
                 yield weibo
